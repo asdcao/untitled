@@ -10,6 +10,8 @@ import 'HealthStatusPage.dart';
 import 'CommunityservicePage.dart';
 import 'new.dart'; // 导入new.dart
 import 'UrgentPopupScreen.dart';
+import 'API_services.dart';
+import 'article_models.dart';
 
 void main() {
   runApp(MyApp());//调用runapp启动应用并传入myapp类
@@ -144,7 +146,13 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = true;
 
   @override
+  late Future<List<Article>> futureArticles;
 
+  @override
+  void initState() {
+    super.initState();
+    futureArticles = ApiService().fetchArticles();
+  }
 
 
   @override
@@ -187,6 +195,84 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildCircleButton(context, Icons.person, '个人中心', LoginPage()),
             ],
           ),
+          SizedBox(height: 30),
+          // 老年健康推送消息部分
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text('健康文章', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ),
+
+          SizedBox(height: 10), // 文章推荐列表
+
+          FutureBuilder<List<Article>>(
+            future: futureArticles,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              }
+              if (snapshot.hasData) {
+                return ListView.builder(
+                  physics: NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: snapshot.data!.length,
+                  itemBuilder: (context, index) {
+                    Article article = snapshot.data![index];
+
+                    final String baseUrl = 'http://192.168.0.173:8000/';
+                    final String mediaPath = '/media/';
+                    final String imagePath = article.image;  // 例如: 'article_images/健康手册.jpg'
+                    // 构建完整的图片URL
+                    final String fullImageUrl = '$baseUrl$mediaPath$imagePath';
+
+                    return Container(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        children: <Widget>[
+                          Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+
+                              image: DecorationImage(
+                                image: NetworkImage(fullImageUrl),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  article.title,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  article.summary,
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              } else {
+                return Text('No articles found');
+              }
+            },
+          ),
+
 
 
 
