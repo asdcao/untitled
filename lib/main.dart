@@ -201,9 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.all(8.0),
             child: Text('健康文章', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ),
-
           SizedBox(height: 10), // 文章推荐列表
-
           FutureBuilder<List<Article>>(
             future: futureArticles,
             builder: (context, snapshot) {
@@ -272,10 +270,6 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             },
           ),
-
-
-
-
         ],
       ),
     );
